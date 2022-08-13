@@ -1,6 +1,4 @@
-use core::num;
-use std::{io::{self, Read}, num::ParseIntError};
-
+use std::{io::{self}, num::ParseIntError, string::FromUtf8Error};
 //Create an enum with variants for all possible commands
 enum Commands {
     Invert, // -
@@ -8,8 +6,7 @@ enum Commands {
     Split, // %
     NextHead, // >
     Output, // !
-    StartL(Option<usize>), // [
-    EndL(Option<usize>), // ]
+    Loop{ptr: Option<usize>, check: Option<char>}, // [ or ]
     Reset, // #
     Pass // All other characters
 }
@@ -21,7 +18,7 @@ static mut DP: usize = 0;
 fn main() {
     //Initialize HYDRA
     unsafe {
-        HYDRA.push(String::from("1"));
+        HYDRA.push(String::from("00000001"));
     }
     //Get code input
     let mut code:String = String::new();
@@ -60,7 +57,7 @@ fn main() {
                     }
                 }
                 //Return a Commands enum that stores the index of its corresponding end
-                Commands::StartL(runningloop)
+                Commands::Loop { ptr: runningloop, check: Some('0') }
             },
             ']' => {
                 //See above match arm's comments for details
@@ -78,25 +75,23 @@ fn main() {
                         break;
                     }
                 }
-                Commands::EndL(runningloop)
+                Commands::Loop { ptr: runningloop, check: Some('1') }
             },
             '#' => Commands::Reset,
             _ => Commands::Pass
         });
     }
-
     drop(code);
-
     //Loop through commands enum and execute code accordingly
     unsafe {
-        while DP > cmds.len() {
+        while DP < cmds.len() {
             match cmds.get(DP).unwrap() {
                 Commands::Invert => {invert();},
-                Commands::PushPop => {push_pop();},
+                Commands::PushPop => {switch();},
                 Commands::Split => {split();},
                 Commands::NextHead => {next_head();},
                 Commands::Output => {output();},
-                Commands::StartL(ptr) | Commands::EndL(ptr) => {jump(&ptr);},
+                Commands::Loop{ptr, check} => {jump(ptr, check);},
                 Commands::Reset => {reset();},
                 _ => {DP += 1;}
             }
@@ -112,13 +107,10 @@ unsafe fn invert() {
     };
     DP += 1;
 }
-//If the first character of the current HYDRA head is 0, it gets removed. If it's 1, a 1 is appended to the end of the HYDRA head.
-unsafe fn push_pop() {
-    match HYDRA.get(HP).unwrap().chars().nth(0).unwrap() {
-        '0' => {HYDRA[HP].remove(0);},
-        '1' => {HYDRA[HP].push_str("1");},
-        _ => {panic!("Tape not in binary");}
-    }
+//Moves the first character of the current HYDRA head to its end.
+unsafe fn switch() {
+    HYDRA[HP].push(HYDRA.get(HP).unwrap().chars().nth(0).unwrap());
+    HYDRA[HP].remove(0);
     DP += 1;
 }
 //Creates a new HYDRA head that's a copy of the current one.
@@ -138,21 +130,26 @@ unsafe fn next_head() {
 //Outputs the value at the current HYDRA head as a string 
 unsafe fn output() {
     //Converts the current HYDRA head into a Result<Vec<u8>> by mapping chunks of 8 binary characters at a time into a u8 and collecting them all in a vector.
-    let num_value: Result<Vec<u8>, ParseIntError> = (0..HYDRA.get(HP).unwrap().len())
+    let out: Result<Vec<u8>, ParseIntError> = HYDRA
+        .get(HP)
+        .iter()
         .step_by(8)
-        .map(|x| u8::from_str_radix(&HYDRA.get(HP).unwrap()[x..x+7], 2))
+        .map(|_c| u8::from_str_radix(HYDRA.get(HP).unwrap(), 2))
         .collect();
+    let out: Result<String, FromUtf8Error> = String::from_utf8(out.ok().unwrap());
     //Outputs the newly converted HYDRA head as a string from a utf8.
-    print!("{:#?}", String::from_utf8(num_value.ok().unwrap()));
+    print!("{}", out.ok().unwrap());
     DP += 1;
 }
-//Jumps to the position in code specified in the Command pointer if its value is not null
-unsafe fn jump(pos: &Option<usize>) {
-    if let Some(x) = *pos {
-        DP = x;
+//Jumps to the position in code specified in the Command pointer if its value is not null and if the first value of the current HYDRA head is equal to the Loop's check value
+unsafe fn jump(pos: &Option<usize>, c: &Option<char>) {
+    if *c == HYDRA.get(HP).unwrap().chars().nth(0) {
+        if let Some(x) = *pos {
+            DP = x;
+        }
     }
 }
 //Resets the current head to 1.
 unsafe fn reset() {
-    HYDRA[HP] = String::from("1");
+    HYDRA[HP] = String::from("00000001");
 }
