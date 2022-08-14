@@ -2,7 +2,7 @@ use std::{io::{self}, num::ParseIntError, string::FromUtf8Error};
 //Create an enum with variants for all possible commands
 enum Commands {
     Invert, // -
-    PushPop, // ;
+    Switch, // ;
     Split, // %
     NextHead, // >
     Output, // !
@@ -34,7 +34,7 @@ fn main() {
     for c in 0..code.len() {
         cmds.push(match code.get(c).unwrap() {
             '-' => Commands::Invert,
-            ';' => Commands::PushPop,
+            ';' => Commands::Switch,
             '%' => Commands::Split,
             '>' => Commands::NextHead,
             '!' => Commands::Output,
@@ -87,7 +87,7 @@ fn main() {
         while DP < cmds.len() {
             match cmds.get(DP).unwrap() {
                 Commands::Invert => {invert();},
-                Commands::PushPop => {switch();},
+                Commands::Switch => {switch();},
                 Commands::Split => {split();},
                 Commands::NextHead => {next_head();},
                 Commands::Output => {output();},
