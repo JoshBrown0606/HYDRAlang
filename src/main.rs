@@ -18,7 +18,7 @@ static mut DP: usize = 0;
 fn main() {
     //Initialize HYDRA
     unsafe {
-        HYDRA.push(String::from("00000001"));
+        HYDRA.push(String::from("00000000"));
     }
     //Get code input
     let mut code:String = String::new();
@@ -151,5 +151,5 @@ unsafe fn jump(pos: &Option<usize>, c: &Option<char>) {
 }
 //Resets the current head to 1.
 unsafe fn reset() {
-    HYDRA[HP] = String::from("00000001");
+    HYDRA[HP] = String::from("00000000");
 }
