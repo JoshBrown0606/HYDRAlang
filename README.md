@@ -13,7 +13,7 @@ HYDRAlang is focused on manipulating a HYDRA, which is a list of bytes represent
 
 `>` makes the next head of the HYDRA the current head. If `>` would move past the last head of the HYDRA, it wraps around to the first head.
 
- `!` outputs the binary data of the current head of the HYDRA as a character.
+ `!` outputs the binary data of all heads of the HYDRA as a string.
  
  `[` and `]` loops through all code between them as long as the first bit of the current head of the HYDRA is 1.
  
