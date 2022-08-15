@@ -127,18 +127,22 @@ unsafe fn next_head() {
     }
     DP += 1;
 }
-//Outputs the value at the current HYDRA head as a string 
+//Outputs the value of all HYDRA heads as a string 
 unsafe fn output() {
-    //Converts the current HYDRA head into a Result<Vec<u8>> by mapping chunks of 8 binary characters at a time into a u8 and collecting them all in a vector.
-    let out: Result<Vec<u8>, ParseIntError> = HYDRA
-        .get(HP)
-        .iter()
-        .step_by(8)
-        .map(|_c| u8::from_str_radix(HYDRA.get(HP).unwrap(), 2))
-        .collect();
-    let out: Result<String, FromUtf8Error> = String::from_utf8(out.ok().unwrap());
-    //Outputs the newly converted HYDRA head as a string from a utf8.
-    print!("{}", out.ok().unwrap());
+    for s in &HYDRA {
+        let out: Result<Vec<u8>, ParseIntError> = s
+            .chars()
+            .step_by(8)
+            .map(|_c| u8::from_str_radix(&s[..], 2))
+            .collect();
+        let out: Result<String, FromUtf8Error> = String::from_utf8(out.ok().unwrap());
+        if s != "10000000" {
+            print!("{}", out.ok().unwrap());
+        } else {
+            //This is NOT a space and is only meant to stop the code from blowing up!
+            print!(" ");
+        }
+    }
     DP += 1;
 }
 //Jumps to the position in code specified in the Command pointer if its value is not null and if the first value of the current HYDRA head is equal to the Loop's check value
