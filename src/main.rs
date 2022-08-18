@@ -98,7 +98,7 @@ fn main() {
         }
     }
 }
-//Replaces the first character of the current HYDRA head with its opposite counterpart (e.g. 1 -> 0 and 0 -> 1).
+//Replaces the leftmost character of the current HYDRA head with its opposite counterpart (e.g. 1 -> 0 and 0 -> 1).
 unsafe fn invert() {
     match HYDRA.get(HP).unwrap().chars().nth(0).unwrap() {
         '0' => {HYDRA[HP].replace_range(0..1, "1")},
@@ -107,7 +107,7 @@ unsafe fn invert() {
     };
     DP += 1;
 }
-//Moves the first character of the current HYDRA head to its end.
+//Moves the leftmost character of the current HYDRA head to its end.
 unsafe fn switch() {
     HYDRA[HP].push(HYDRA.get(HP).unwrap().chars().nth(0).unwrap());
     HYDRA[HP].remove(0);
@@ -139,7 +139,7 @@ unsafe fn output() {
         if s != "10000000" {
             print!("{}", out.ok().unwrap());
         } else {
-            //This is NOT a space and is only meant to stop the code from blowing up!
+            //This is NOT a space and is only meant to stop the code from blowing up! Rust doesn't like it when THIS SPECIFIC CHARACTER (non-breaking space) is mapped using the above code, so it's explicitly printed here.
             print!(" ");
         }
     }
