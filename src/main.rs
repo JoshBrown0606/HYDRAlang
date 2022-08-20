@@ -1,4 +1,4 @@
-use std::{io::{self}, num::ParseIntError, string::FromUtf8Error};
+use std::{io::{self}, num::ParseIntError};
 //Create an enum with variants for all possible commands
 enum Commands {
     Invert, // -
@@ -132,16 +132,13 @@ unsafe fn output() {
     for s in &HYDRA {
         let out: Result<Vec<u8>, ParseIntError> = s
             .chars()
-            .step_by(8)
             .map(|_c| u8::from_str_radix(&s[..], 2))
             .collect();
-        let out: Result<String, FromUtf8Error> = String::from_utf8(out.ok().unwrap());
-        if s != "10000000" {
-            print!("{}", out.ok().unwrap());
-        } else {
-            //This is NOT a space and is only meant to stop the code from blowing up! Rust doesn't like it when THIS SPECIFIC CHARACTER (non-breaking space) is mapped using the above code, so it's explicitly printed here.
-            print!(" ");
-        }
+        //Casting a byte as two bytes to stop rust from blowing up if the value of the current head of the HYDRA is over 127
+        let out: [u16; 1] = [*out.ok().unwrap().get(0).unwrap() as u16];
+        let out: String = String::from_utf16_lossy(&out);
+        
+        print!("{}", out);
     }
     DP += 1;
 }
