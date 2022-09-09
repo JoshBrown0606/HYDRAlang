@@ -153,4 +153,5 @@ unsafe fn jump(pos: &Option<usize>, c: &Option<char>) {
 //Resets the current head to 1.
 unsafe fn reset() {
     HYDRA[HP] = String::from("00000000");
+    DP += 1;
 }
